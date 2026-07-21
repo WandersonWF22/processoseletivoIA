@@ -1,6 +1,7 @@
 import os
 import sys
 import io
+import pickle
 
 # Configurar stdout e stderr para usar UTF-8 e evitar erros de codificação no Windows
 if sys.stdout.encoding != 'utf-8':
@@ -37,9 +38,20 @@ def main():
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
 
-    (_, _), (x_test, y_test) = tf.keras.datasets.cifar10.load_data()
+    dataset_path = r"C:\Users\Wanderson\.keras\datasets\cifar-10-batches-py"
+
+    with open(os.path.join(dataset_path, "test_batch"), "rb") as f:
+        batch = pickle.load(f, encoding="bytes")
+
+    x_test = batch[b"data"]
+    y_test = np.array(batch[b"labels"])
+
+    x_test = x_test.reshape(-1, 3, 32, 32)
+    x_test = x_test.transpose(0, 2, 3, 1)
+
     x_test = x_test.astype("float32") / 255.0
-    y_test = y_test.reshape(-1)
+    
+    N_SAMPLES = min(5, len(x_test))
 
     print(f"Rodando inferência em {N_SAMPLES} amostras usando model.tflite:\n")
     for i in range(N_SAMPLES):
@@ -48,9 +60,13 @@ def main():
         interpreter.invoke()
         pred = interpreter.get_tensor(output_details[0]["index"])[0]
         predicted_class = int(np.argmax(pred))
+        
+        status = "✓" if predicted_class == y_test[i] else "✗"
         print(
-            f"Amostra {i + 1}: predito={CLASS_NAMES[predicted_class]} "
-            f"| real={CLASS_NAMES[int(y_test[i])]}"
+            f"Amostra {i+1}: "
+            f"Predito = {CLASS_NAMES[predicted_class]} | "
+            f"Real = {CLASS_NAMES[int(y_test[i])]} "
+            f"{status}"
         )
 
 

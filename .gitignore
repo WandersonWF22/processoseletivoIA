@@ -11,3 +11,9 @@ __pycache__/
 # Ambientes / editores
 .vscode/
 .DS_Store
+
+# Ambiente virtual Python
+.venv/
+
+# Arquivos temporários
+*.tmp
