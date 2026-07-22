@@ -51,9 +51,13 @@ def load_cifar10(path):
     return (x_train, np.array(y_train)), (x_test, np.array(y_test))
 
 
-dataset_path = r"C:\Users\Wanderson\.keras\datasets\cifar-10-batches-py"
+dataset_path = os.path.expanduser("~/.keras/datasets/cifar-10-batches-py")
 
-(x_train, y_train), (x_test, y_test) = load_cifar10(dataset_path)
+if not os.path.exists(dataset_path):
+    # Faz o download automático apenas se o dataset não existir
+    (x_train, y_train), (x_test, y_test) = tf.keras.datasets.cifar10.load_data()
+else:
+    (x_train, y_train), (x_test, y_test) = load_cifar10(dataset_path)
 
 # Normalização
 x_train = x_train.astype("float32") / 255.0
